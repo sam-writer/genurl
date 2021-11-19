@@ -43,6 +43,8 @@ TLDS_WEIGHTS = [
 ]
 TLDS, WEIGHTS = list(zip(*TLDS_WEIGHTS))
 
+CHARS = "0123456789qwertyuiopasdfghjklzxcvbnmQWERTYUIOPASDFGHJKLZXCVBNM"
+
 
 def random_word():
     return random.choice(usr_words)
@@ -197,7 +199,13 @@ def random_subpath():
         return random_tech_blog().replace(" ", "-")
     else:
         l = random.randrange(6, 30)
-        u = str(uuid.uuid4())
+        if random.random() > 0.5:
+            u = str(uuid.uuid4())
+        else:
+            u = []
+            for _ in range(l):
+                u.append(random.choice(CHARS))
+            u = "".join(u)
         return u[:l]
 
 
