@@ -201,12 +201,13 @@ def random_subpath():
         l = random.randrange(6, 30)
         if random.random() > 0.5:
             u = str(uuid.uuid4())
+            u = u[:l]
         else:
             u = []
             for _ in range(l):
                 u.append(random.choice(CHARS))
             u = "".join(u)
-        return u[:l]
+        return u
 
 
 def random_url():
