@@ -9,6 +9,21 @@ from random_word import RandomWords
 
 fake = Faker()
 r = RandomWords()
+with open("/usr/share/dict/words") as f:
+    usr_words = [l.strip() for l in f]
+
+
+NAME_CACHE_SIZE = 100
+VERB_CACHE_SIZE = 100
+NOUN_CACHE_SIZE = 100
+ADJ_CACHE_SIZE = 100
+ADV_CACHE_SIZE = 100
+
+name_c = []
+verb_c = []
+noun_c = []
+adj_c = []
+adv_c = []
 
 
 # https://www.hayksaakian.com/most-popular-tlds/
@@ -29,17 +44,22 @@ TLDS_WEIGHTS = [
 TLDS, WEIGHTS = list(zip(*TLDS_WEIGHTS))
 
 
+def random_word():
+    return random.choice(usr_words)
+
+
 def random_name():
+    if len(name_c) > NAME_CACHE_SIZE:
+        return random.choice(name_c)
     return fake.name()
 
 
 # build a cache, once over 1000 just use cache
-verbc = []
 
 
 def random_verb():
-    if len(verbc) > 700:
-        return random.choice(verbc)
+    if len(verb_c) > VERB_CACHE_SIZE:
+        return random.choice(verb_c)
     maybe = ""
     while (not isinstance(maybe, str)) or len(maybe) == 0:
         # it sometimes returns None? or empty?
@@ -48,16 +68,13 @@ def random_verb():
             includePartOfSpeech="verb",
             excludePartOfSpeech="noun,adjective,adverb",
         )
-    verbc.append(maybe)
+    verb_c.append(maybe)
     return maybe
 
 
-nounc = []
-
-
 def random_noun():
-    if len(nounc) > 1000:
-        return random.choice(nounc)
+    if len(noun_c) > NOUN_CACHE_SIZE:
+        return random.choice(noun_c)
     maybe = ""
     while not isinstance(maybe, str) or len(maybe) == 0:
         # it sometimes returns None? or empty?
@@ -66,16 +83,13 @@ def random_noun():
             includePartOfSpeech="noun",
             excludePartOfSpeech="verb,adjective,adverb",
         )
-    nounc.append(maybe)
+    noun_c.append(maybe)
     return maybe
 
 
-adjc = []
-
-
 def random_adjective():
-    if len(adjc) > 200:
-        return random.choice(adjc)
+    if len(adj_c) > ADJ_CACHE_SIZE:
+        return random.choice(adj_c)
     maybe = ""
     while not isinstance(maybe, str) or len(maybe) == 0:
         # it sometimes returns None? or empty?
@@ -84,16 +98,13 @@ def random_adjective():
             includePartOfSpeech="adjective",
             excludePartOfSpeech="verb,noun,adverb",
         )
-    adjc.append(maybe)
+    adj_c.append(maybe)
     return maybe
 
 
-advc = []
-
-
 def random_adverb():
-    if len(advc) > 100:
-        return random.choice(advc)
+    if len(adv_c) > ADV_CACHE_SIZE:
+        return random.choice(adv_c)
     maybe = ""
     while not isinstance(maybe, str) or len(maybe) == 0:
         # it sometimes returns None? or empty?
@@ -102,7 +113,7 @@ def random_adverb():
             includePartOfSpeech="adverb",
             excludePartOfSpeech="verb,adjective,noun",
         )
-    advc.append(maybe)
+    adv_c.append(maybe)
     return maybe
 
 
@@ -193,25 +204,25 @@ def random_subpath():
 def random_url():
     root = None
     while root is None:
-        root = r.get_random_word()
+        root = random_word()
     root = root.lower()
     subdomain = ""
     if random.random() < 0.8:
         subdomain = random.choice(
             [
                 "www",
-                r.get_random_word(),
-                r.get_random_word(),
-                r.get_random_word() + r.get_random_word(),
+                random_word(),
+                random_word(),
+                random_word() + random_word(),
             ]
         )
         while subdomain is None:
             subdomain = random.choice(
                 [
                     "www",
-                    r.get_random_word(),
-                    r.get_random_word(),
-                    r.get_random_word(),
+                    random_word(),
+                    random_word(),
+                    random_word() + random_word(),
                 ]
             )
         subdomain = subdomain.replace(" ", "-")
@@ -230,13 +241,30 @@ def random_url():
         protocol = "https://"
     return protocol + main
 
+
 def main():
-    parser = argparse.ArgumentParser(description='Generate a file of URLs.')
-    parser.add_argument('number', type=int, help='How many URLs to generate')
-    parser.add_argument('outfile', type=str, help='Output path')
+    global NAME_CACHE_SIZE
+    global VERB_CACHE_SIZE
+    global NOUN_CACHE_SIZE
+    global ADJ_CACHE_SIZE
+    global ADV_CACHE_SIZE
+
+    parser = argparse.ArgumentParser(description="Generate a file of URLs.")
+    parser.add_argument("--number", "-n", type=int, default=1000, help="How many URLs to generate")
+    parser.add_argument("--outfile", "-o", type=str, default="urls.txt", help="Output path")
+    parser.add_argument("--slow", "-s", action="store_true", help="Run slower but get more diversity of words")
     args = parser.parse_args()
+    if args.slow:
+        print("running in slow mode, URLs will have more diversity")
+        NAME_CACHE_SIZE = 10000
+        VERB_CACHE_SIZE = 2000
+        NOUN_CACHE_SIZE = 5000
+        ADJ_CACHE_SIZE = 1000
+        ADV_CACHE_SIZE = 500
+
     NUM = int(args.number)
     OUT = args.outfile
+    print(f"Generating {NUM} URLs, saving in {OUT}...\n")
     with open(OUT, "w+") as f:
         for _ in tqdm(range(NUM), total=NUM):
             url = random_url()
