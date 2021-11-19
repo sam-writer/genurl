@@ -27,4 +27,4 @@ make changes, `poetry run genurl`
 
 ## Publishing
 
-Haven't automated yet. `poetry publish --username PYPI_USERNAME --password PYPI_PASS --build`
+Haven't automated yet. First increment version in `pyproject.toml` and then `poetry publish --username PYPI_USERNAME --password PYPI_PASS --build`
