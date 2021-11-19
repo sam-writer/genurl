@@ -2,6 +2,8 @@
 
 GENerate URLs
 
+This is a sketch of how this should work. Better to use a LM than some random packages. Feel free to open a PR.
+
 ## Usage
 
 ```sh
